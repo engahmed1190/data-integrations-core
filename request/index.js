@@ -92,7 +92,7 @@ function createJSONBody(options) {
     ? dataintegration.active_default_configuration
     : dataintegration.default_configuration;
 
-  return getFormattedRequestJSONBody(Object.assign({}, default_configuration, inputs));
+  return getFormattedRequestJSONBody({ dataintegration, body: Object.assign({}, default_configuration, inputs) });
 }
 
 const getRequestBody = ({ dataintegration, inputs, strategy_status }) => {
@@ -104,7 +104,7 @@ const getRequestBody = ({ dataintegration, inputs, strategy_status }) => {
     return createJSONBody({ inputs, dataintegration, strategy_status });
   }
 
-  if (dataintegration.request_type === 'form-urlendcoded') {
+  if (dataintegration.request_type === 'form-urlencoded') {
     const body = createJSONBody({ inputs, dataintegration, strategy_status });
 
     return urlencode.stringify(body);
