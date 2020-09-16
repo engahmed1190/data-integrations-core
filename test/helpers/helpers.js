@@ -86,23 +86,23 @@ describe('Helper functions', () => {
       expect(inputs).to.be.deep.equal(result);
     });
   });
-  describe('getXMLBodyTemplate', () => {
+  describe('getBodyTemplate', () => {
     const dataIntegration = {
       active_default_configuration: { active: true, },
       default_configuration: { active: false, },
     }
     it('returns active_default_configuration if strategy is in active status', () => {
-      const bodyTemplate = helpers.getXMLBodyTemplate(dataIntegration, 'active');
+      const bodyTemplate = helpers.getBodyTemplate(dataIntegration, 'active');
 
       expect(bodyTemplate).to.be.equal(dataIntegration.active_default_configuration);
     });
     it('returns default_configuration if strategy is in testing status', () => {
-      const bodyTemplate = helpers.getXMLBodyTemplate(dataIntegration, 'testing');
+      const bodyTemplate = helpers.getBodyTemplate(dataIntegration, 'testing');
 
       expect(bodyTemplate).to.be.equal(dataIntegration.default_configuration);
     });
     it('returns empty object when there are no configurations in dataintegration', () => {
-      const bodyTemplate = helpers.getXMLBodyTemplate({}, 'testing');
+      const bodyTemplate = helpers.getBodyTemplate({}, 'testing');
 
       expect(bodyTemplate).to.be.an('object').and.be.empty;
     });

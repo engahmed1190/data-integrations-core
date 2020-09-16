@@ -244,9 +244,9 @@ async function decryptSecurityCert(options) {
  * Get template object to be used for XML POST body structure creation
  * @param {Object} dataIntegration
  * @param {String} strategyStatus
- * @return {Object} Returns object with future structure of XML body
+ * @return {Object} Returns object with future structure of XML/JSON body
  */
-function getXMLBodyTemplate(dataIntegration, strategyStatus) {
+function getBodyTemplate(dataIntegration, strategyStatus) {
   if (strategyStatus === 'active' && dataIntegration.active_default_configuration) {
     return dataIntegration.active_default_configuration;
   }
@@ -404,7 +404,7 @@ module.exports = {
   getInputs,
   getOutputs,
   generateDynamicPath,
-  getXMLBodyTemplate,
+  getBodyTemplate,
   generateDynamicQueryString,
   formatInputValue,
   customResponseParser,
