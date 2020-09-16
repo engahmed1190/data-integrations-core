@@ -20,7 +20,7 @@ let json2xml;
  */
 function createBodyXML(options) {
   let { inputs, dataintegration, strategy_status } = options;
-  let body = helpers.getXMLBodyTemplate(dataintegration, strategy_status);
+  let body = helpers.getBodyTemplate(dataintegration, strategy_status);
 
   if (dataintegration.inputs) {    
     dataintegration.inputs.forEach(config => {
@@ -66,18 +66,30 @@ const getFormattedRequestJSONBody = ({ dataintegration, body }) => {
 
 function createJSONBody(options) {
   let { inputs, dataintegration, strategy_status } = options;
+
+  const body = helpers.getBodyTemplate(dataintegration, strategy_status);
+
   if (inputs && dataintegration.inputs) {
     dataintegration.inputs.forEach(config => {
+      const formattedInput = helpers.formatInputValue({ name: config.input_name, config, inputs });
+
+      inputs[config.input_name] = formattedInput;
+
       if (config.traversal_path) {
         let traversal_arr = config.traversal_path.split('.');
-        let current_body = inputs;
+        let current_body = body;
         for (let i = 0; i < traversal_arr.length - 1; i++) {
           let elmnt = traversal_arr[ i ];
           current_body = current_body[elmnt];
         }
-        current_body[ traversal_arr[ traversal_arr.length - 1 ] ] = helpers.formatInputValue({ name: config.input_name, config, inputs, });
+
+        current_body[traversal_arr[traversal_arr.length - 1]] = typeof formattedInput === 'undefined'
+          ? current_body[traversal_arr[traversal_arr.length - 1]]
+          : formattedInput;
       } else {
-        inputs[ config.input_name ] = helpers.formatInputValue({ name: config.input_name, config, inputs, });
+        body[config.input_name] = typeof formattedInput === 'undefined'
+          ? body[config.input_name]
+          : formattedInput;
       }
     })
   }
@@ -88,11 +100,7 @@ function createJSONBody(options) {
     })
   }
 
-  const default_configuration = (strategy_status === 'active' && dataintegration.active_default_configuration)
-    ? dataintegration.active_default_configuration
-    : dataintegration.default_configuration;
-
-  return getFormattedRequestJSONBody({ dataintegration, body: Object.assign({}, default_configuration, inputs) });
+  return getFormattedRequestJSONBody({ dataintegration, body });
 }
 
 const getRequestBody = ({ dataintegration, inputs, strategy_status }) => {
