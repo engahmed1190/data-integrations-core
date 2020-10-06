@@ -1,6 +1,6 @@
 {
   "name": "@digifi-los/data-integrations-core",
-  "version": "0.0.15",
+  "version": "0.0.16",
   "description": "Provide data integrations.",
   "main": "lib/index.js",
   "scripts": {
@@ -23,6 +23,7 @@
     "flat": "^4.1.0",
     "fs-extra": "^6.0.1",
     "moment": "^2.22.1",
+    "moment-timezone": "^0.5.31",
     "numeric": "^1.2.6",
     "serve": "^8.2.0",
     "urlencode": "^1.1.0",
