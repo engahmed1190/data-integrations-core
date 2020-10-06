@@ -1,5 +1,5 @@
 const numeric = require('numeric');
-const moment = require('moment');
+const moment = require('moment-timezone');
 const vm = require('vm');
 
 var buildScript = function (configuration) {
