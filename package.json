@@ -1,11 +1,11 @@
 {
   "name": "@digifi-los/data-integrations-core",
-  "version": "0.0.16",
+  "version": "1.0.0",
   "description": "Provide data integrations.",
-  "main": "lib/index.js",
+  "main": "index.js",
   "scripts": {
-    "test": "export NODE_ENV=test && mocha --timeout 3500 test/**/*.js",
-    "cover": "export NODE_ENV=test && node_modules/istanbul/lib/cli.js cover node_modules/mocha/bin/_mocha -- -R spec --timeout 3500 test/**/*.js"
+    "test": "export NODE_ENV=test && mocha --timeout 3500 test/*.spec.js",
+    "cover": "export NODE_ENV=test && node_modules/istanbul/lib/cli.js cover node_modules/mocha/bin/_mocha -- -R spec --timeout 3500 test/*spec.js"
   },
   "repository": {
     "type": "git",
@@ -30,10 +30,11 @@
     "xml2js": "^0.4.23"
   },
   "devDependencies": {
-    "chai": "^4.1.2",
     "chai-spies": "^1.0.0",
+    "chai": "^4.1.2",
     "coveralls": "^3.0.1",
     "istanbul": "^1.1.0-alpha.1",
-    "mocha": "^5.2.0"
+    "mocha": "^5.2.0",
+    "periodicjs": "^10.70.92"
   }
 }
