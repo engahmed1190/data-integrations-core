@@ -2,54 +2,61 @@ const numeric = require('numeric');
 const moment = require('moment-timezone');
 const vm = require('vm');
 
-var buildScript = function (configuration) {
+const buildScript = (configuration) => {
   try {
     let script = configuration.global_functions.reduce((result, global_function) => {
       result += '\t';
       result += `let ${global_function.name} = ${global_function.operation};\r\n\t`;
+
       return result;
     }, '"use strict";\r\ntry{\r\n');
-    let mainFn = configuration.main;
+
     script += '\t';
-    script += `let main = (${mainFn.toString()})();\r\n\t`;
-    script += '} catch(e){ \r\n\t console.log({e}); _global.error = e.message \r\n}';
+    script += `let main = (${configuration.main.toString()})();\r\n\t`;
+    script += '} catch(error){ \r\n\t console.log({ error }); _global.error = error.message \r\n}';
+
     return script;
-  } catch (e) {
-    return e;
+  } catch (error) {
+    return error;
   }
 };
 
 
-var buildContext = function (variables) {
-  let _global = {
+const buildContext = () => {
+  const _global = {
     parsed_variables: {},
     error: '',
   };
+
   return Object.assign({}, { console, moment, numeric, _global });
 };
 
 
-var prepareParser = function (state, sandbox, script) {
+const prepareParser = (state, sandbox, script) => {
   try {
     sandbox = Object.assign({}, sandbox, state);
-    let parser = new vm.Script(script);
+    const parser = new vm.Script(script);
     vm.createContext(sandbox);
+
     return { sandbox, parser, };
-  } catch (e) {
-    return e;
+  } catch (error) {
+    return error;
   }
 };
 
-module.exports = function (configuration, data) {
+module.exports = (configuration, data) => {
   try {
-    let script = buildScript(configuration);
-    let _state = { json_data: data, };
-    let _context = buildContext(configuration.variables);
-    let { sandbox, parser } = prepareParser(_state, _context, script);
+    const state = { json_data: data, };
+
+    const script = buildScript(configuration);
+    const context = buildContext(configuration.variables);
+
+    const { sandbox, parser } = prepareParser(state, context, script);
+
     parser.runInContext(sandbox);
-    let result = sandbox._global.parsed_variables;
-    return result;
-  } catch (e) {
+
+    return sandbox._global.parsed_variables;
+  } catch (error) {
     return {};
   }
 };
