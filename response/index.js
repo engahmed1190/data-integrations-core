@@ -15,7 +15,7 @@ async function customResponseParser(options) {
   try {
     const { segment, response, status, dataintegration} = options;
 
-    const responseTraversalPath = options.responseTraversalPath || options.dataintegration.outputs
+    const responseTraversalPath = options.responseTraversalPath || options.dataintegration.outputs;
 
     const parsedResponse = await parseRawData(response, dataintegration);
     const api_response = await traverseResponseRawData(parsedResponse, dataintegration);
@@ -51,13 +51,13 @@ async function parseRawData(rawData, dataintegration) {
 
 async function traverseResponseRawData(parsedResponse, dataintegration) {
   if (!dataintegration || !parsedResponse) {
-    return;
+    return parsedResponse;
   }
 
   const { raw_data_parse, raw_data_traversal_path, } = dataintegration;
 
   if (!raw_data_parse || !raw_data_traversal_path) {
-    return;
+    return parsedResponse;
   }
 
   const traversalPath = raw_data_traversal_path.split('.');
@@ -139,7 +139,7 @@ function customTraverse(obj, traversePath, arrayConfigs = []) {
 
           return foundObj;
         }
-      } else if (coerceHelper.coerceNumberValue(traversePathElement) < acc.length) {
+      } else if (!isNaN(Number(traversePathElement)) && Number(traversePathElement) < acc.length) {
         return acc[traversePathElement];
       }
     }

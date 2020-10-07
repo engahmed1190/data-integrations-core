@@ -1,6 +1,6 @@
 {
   "name": "@digifi-los/data-integrations-core",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Provide data integrations.",
   "main": "index.js",
   "scripts": {
