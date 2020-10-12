@@ -12,6 +12,7 @@ const { URL, } = require('url');
 const urlencode = require('urlencode');
 const xml2js = require('xml2js');
 const periodic = require('periodicjs');
+const appConfigLoader = require('@digifi/app-config-loader');
 
 const logger = periodic.logger;
 
@@ -26,7 +27,7 @@ async function parser(options) {
 
   let dir, filename;
 
-  const inputs = getInputs(options);
+  const inputs = await getInputs(options);
 
   let body = getRequestBody({ inputs, dataintegration, strategy_status });
   body = dataintegration.stringify ? JSON.stringify(body) : body;
@@ -37,7 +38,7 @@ async function parser(options) {
     : dataintegration.request_options;
 
   if (inputs) {
-    changeRequestOptionsByInputs({ inputs, requestOptions });
+    changeRequestOptionsByInputs({ dataintegration, inputs, requestOptions });
   }
 
   let response_options = dataintegration.response_option_configs || {};
@@ -365,35 +366,61 @@ function formatInputValue(options) {
  * @return {Object} Returns object containing input name and value.
  * 
  */
-function getInputs(options) {
+async function getInputs(options) {
   const { dataintegration, state, } = options;
 
-  return dataintegration.inputs.reduce((inputs, input) => {
+  const allInputs = dataintegration.inputs.reduce((inputs, input) => {
     try {
       inputs[input.input_name] = input.input_type === 'value'
         ? input.input_value
         : state[input.input_variable.title];
-
-      return inputs;
     } catch (error) {
+      console.log(`cannot retrive ${input.input_name} of ${dataintegration.name}`);
+    } finally {
       return inputs;
     }
   }, {});
+
+  if (Array.isArray(dataintegration.secrets)) {
+    await Promise.all(dataintegration.secrets.map(async (secret) => {
+      allInputs[secret.input_name] = await appConfigLoader.getSecret(secret.secret_key);
+    }));
+  }
+
+  return allInputs;
 }
 
 function changeRequestOptionsByInputs(options) {
-  const { inputs, requestOptions } = options;
+  const { dataintegration, inputs, requestOptions } = options;
   const { path_variable, request_bearer_token } = inputs;
 
   requestOptions.path = generateDynamicPath(requestOptions.path, inputs);
 
   if (path_variable) {
-    requestOptions.path = `${requestOptions.path}/${inputs[path_variable]}`;
+    requestOptions.path = `${requestOptions.path}/${inputs[path_variable].value}`;
   }
 
-  if (request_bearer_token && requestOptions.headers) {
-    requestOptions.headers['Authorization'] = `Bearer ${request_bearer_token}`;
+  const headers = getHeadersFromInputs({ dataintegration, inputs });
+
+  if (request_bearer_token) {
+    headers['Authorization'] = `Bearer ${request_bearer_token.value}`;
   }
+
+  requestOptions.headers = Object.assign(
+    requestOptions.headers,
+    headers,
+  );
+}
+
+function getHeadersFromInputs({ dataintegration, inputs }) {
+  return dataintegration.inputs.concat(dataintegration.secrets || [])
+    .reduce((headers, input) => {
+      if (input.header && inputs[input.input_name]) {
+        headers[input.input_name] = inputs[input.input_name];
+      }
+
+      return headers;
+    }, {});
 }
 
 

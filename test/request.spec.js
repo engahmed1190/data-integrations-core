@@ -18,8 +18,8 @@ chai.use(chaiSpies);
 
 describe('Request functions', () => {
   describe('getInputs', () => {
-    it('maps dataintegration inputs to state correctly', () => {
-      const inputs = getInputs({
+    it('maps dataintegration inputs to state correctly', async () => {
+      const inputs = await getInputs({
         dataintegration: {
           inputs: [
             {
