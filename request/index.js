@@ -379,7 +379,7 @@ async function getInputs(options) {
         ? input.input_value
         : state[input.input_variable.title];
     } catch (error) {
-      console.log(`cannot retrive ${input.input_name} of ${dataintegration.name}`);
+      console.log(`error while assigning value to ${input.input_name} of ${dataintegration.name}: ${error.message}`);
     } finally {
       return inputs;
     }
@@ -390,7 +390,7 @@ async function getInputs(options) {
       try {
         allInputs[secret.input_name] = await appConfigLoader.getSecret(secret.secret_key);
       } catch (error) {
-        console.log(`cannot retrive ${secret.input_name} of ${dataintegration.name}`);
+        console.log(`cannot retrieve ${secret.secret_key} of ${dataintegration.name}: ${error.message}`);
       }
     }));
   }
