@@ -97,19 +97,25 @@ function createBodyXML(options) {
   const { inputs, dataintegration, strategy_status } = options;
   const body = getBodyTemplate(dataintegration, strategy_status);
 
-  if (dataintegration.inputs) {    
-    dataintegration.inputs.forEach(config => {
-      if (config.traversal_path) {
-        let traversal_arr = config.traversal_path.split('.');
-        let current_body = body;
-        for (let i = 0; i < traversal_arr.length - 1; i++) {
-          let elmnt = traversal_arr[ i ];
-          current_body = current_body[elmnt];
-        }
-        current_body[ traversal_arr[ traversal_arr.length - 1 ] ] = formatInputValue({ name: config.input_name, config, inputs, });
-      }
+  getInputFields(dataintegration).forEach(config => {
+    if (!config.traversal_path) {
+      return;
+    }
+
+    const traversalArr = config.traversal_path.split('.');
+    let currentBody = body;
+
+    for (let i = 0; i < traversalArr.length - 1; i++) {
+      const elementOfPath = traversalArr[i];
+      currentBody = currentBody[elementOfPath];
+    }
+
+    currentBody[traversalArr[traversalArr.length - 1]] = formatInputValue({
+      name: config.input_name,
+      config,
+      inputs,
     });
-  }
+  });
 
   if (dataintegration.xml_library === 'xml2js') {
     const builder = new xml2js.Builder(dataintegration.xml_configs || { 
@@ -145,8 +151,8 @@ function createJSONBody(options) {
 
   const body = getBodyTemplate(dataintegration, strategy_status);
 
-  if (inputs && dataintegration.inputs) {
-    dataintegration.inputs.forEach(config => {
+  if (inputs) {
+    getInputFields(dataintegration).forEach(config => {
       const formattedInput = formatInputValue({ name: config.input_name, config, inputs });
 
       inputs[config.input_name] = formattedInput;
@@ -159,13 +165,11 @@ function createJSONBody(options) {
           current_body = current_body[elmnt];
         }
 
-        current_body[traversal_arr[traversal_arr.length - 1]] = typeof formattedInput === 'undefined'
-          ? current_body[traversal_arr[traversal_arr.length - 1]]
-          : formattedInput;
-      } else {
-        body[config.input_name] = typeof formattedInput === 'undefined'
-          ? body[config.input_name]
-          : formattedInput;
+        if (typeof formattedInput !== 'undefined') {
+          current_body[traversal_arr[traversal_arr.length - 1]] = formattedInput;
+        }
+      } else if (typeof formattedInput !== 'undefined') {
+        body[config.input_name] = formattedInput;
       }
     })
   }
@@ -383,7 +387,11 @@ async function getInputs(options) {
 
   if (Array.isArray(dataintegration.secrets)) {
     await Promise.all(dataintegration.secrets.map(async (secret) => {
-      allInputs[secret.input_name] = await appConfigLoader.getSecret(secret.secret_key);
+      try {
+        allInputs[secret.input_name] = await appConfigLoader.getSecret(secret.secret_key);
+      } catch (error) {
+        console.log(`cannot retrive ${secret.input_name} of ${dataintegration.name}`);
+      }
     }));
   }
 
@@ -413,7 +421,7 @@ function changeRequestOptionsByInputs(options) {
 }
 
 function getHeadersFromInputs({ dataintegration, inputs }) {
-  return dataintegration.inputs.concat(dataintegration.secrets || [])
+  return getInputFields(dataintegration)
     .reduce((headers, input) => {
       if (input.header && inputs[input.input_name]) {
         headers[input.input_name] = inputs[input.input_name];
@@ -421,6 +429,20 @@ function getHeadersFromInputs({ dataintegration, inputs }) {
 
       return headers;
     }, {});
+}
+
+function getInputFields(dataintegration) {
+  let inputFields = [];
+
+  if (Array.isArray(dataintegration.inputs)) {
+    inputFields = inputFields.concat(dataintegration.inputs);
+  }
+
+  if (Array.isArray(dataintegration.secrets)) {
+    inputFields = inputFields.concat(dataintegration.secrets);
+  }
+
+  return inputFields;
 }
 
 
