@@ -405,13 +405,13 @@ function changeRequestOptionsByInputs(options) {
   requestOptions.path = generateDynamicPath(requestOptions.path, inputs);
 
   if (path_variable) {
-    requestOptions.path = `${requestOptions.path}/${inputs[path_variable].value}`;
+    requestOptions.path = `${requestOptions.path}/${inputs[path_variable]}`;
   }
 
   const headers = getHeadersFromInputs({ dataintegration, inputs });
 
   if (request_bearer_token) {
-    headers['Authorization'] = `Bearer ${request_bearer_token.value}`;
+    headers['Authorization'] = `Bearer ${request_bearer_token}`;
   }
 
   requestOptions.headers = Object.assign(
