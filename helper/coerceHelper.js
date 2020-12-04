@@ -22,7 +22,7 @@ function coerceValue(value, dataType) {
 function coerceNumberValue(value) {
   const formattedValue = Number(value);
 
-  return !isNaN(formattedValue) ? formattedValue : value;
+  return !isNaN(formattedValue) ? formattedValue : null;
 }
 
 function coerceDateValue(value) {

@@ -110,7 +110,10 @@ function getOutputs(options) {
 
       if (variable) {
         const value = customTraverse(api_response, responseTraversalPathMap.get(api_name), curr.arrayConfigs);
-        outputs[variable] = value && coerceHelper.coerceValue(value, curr.data_type) || null;
+
+        outputs[variable] = value !== null && value !== undefined
+          ? coerceHelper.coerceValue(value, curr.data_type)
+          : null;
       }
 
       return outputs;
